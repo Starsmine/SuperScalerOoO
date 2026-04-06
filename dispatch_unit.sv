@@ -114,16 +114,23 @@ module dispatch_unit (
     // ------------------------------------------------------------------
     always_comb begin
         // Instruction 0
-        if      (op0 == 7'b0110011 && instr0[25])  fu_type_0 = 2'b10; // MUL
-        else if (op0 == 7'b0000011 || op0 == 7'b0100011) fu_type_0 = 2'b11; // load/store -> MEM
-        else if (op0 == 7'b0110011 || op0 == 7'b0010011) fu_type_0 = 2'b01; // R-type/I-type -> ADDER
-        else                                              fu_type_0 = 2'b00; // NOP / other
+        // rd==x0 means no visible side-effect for ALU/MUL → treat as NOP
+        if      (op0 == 7'b0110011 && instr0[25] && instr0[11:7] != 5'd0)
+                                                      fu_type_0 = 2'b10; // MUL
+        else if (op0 == 7'b0000011 || op0 == 7'b0100011)
+                                                      fu_type_0 = 2'b11; // load/store -> MEM
+        else if ((op0 == 7'b0110011 || op0 == 7'b0010011) && instr0[11:7] != 5'd0)
+                                                      fu_type_0 = 2'b01; // R-type/I-type -> ADDER
+        else                                          fu_type_0 = 2'b00; // NOP / other
 
         // Instruction 1
-        if      (op1 == 7'b0110011 && instr1[25])  fu_type_1 = 2'b10;
-        else if (op1 == 7'b0000011 || op1 == 7'b0100011) fu_type_1 = 2'b11;
-        else if (op1 == 7'b0110011 || op1 == 7'b0010011) fu_type_1 = 2'b01;
-        else                                              fu_type_1 = 2'b00;
+        if      (op1 == 7'b0110011 && instr1[25] && instr1[11:7] != 5'd0)
+                                                      fu_type_1 = 2'b10;
+        else if (op1 == 7'b0000011 || op1 == 7'b0100011)
+                                                      fu_type_1 = 2'b11;
+        else if ((op1 == 7'b0110011 || op1 == 7'b0010011) && instr1[11:7] != 5'd0)
+                                                      fu_type_1 = 2'b01;
+        else                                          fu_type_1 = 2'b00;
     end
 
     // ------------------------------------------------------------------
